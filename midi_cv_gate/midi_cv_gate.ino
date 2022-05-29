@@ -1,13 +1,16 @@
 #include "shared.h"
 #include <MIDI.h>
 #include <serialMIDI.h>
+#include <EEPROM.h>
 
 #define NORMAL_MODE 0
 #define TEST_CV_GATE_MODE 1
 #define TEST_MIDI_MODE 2
 
 #define MODE NORMAL_MODE
-#define MIDI_CHANNEL 11
+#define MIDI_CHANNEL_DEFAULT 11
+#define EEPROM_MAGIC_NUMBER 0x1234ABCD
+#define EEPROM_VERSION_1 1
 
 void setup()
 {
@@ -64,10 +67,67 @@ void setup_normal_mode()
     }
     note_fifo_update = true;
 
+    setupEEPROM();
+    setupMIDI();
+
+    delay(1000);
+}
+
+void setupMIDI()
+{
     MIDI.setHandleNoteOn(handleNoteOn);
     MIDI.setHandleNoteOff(handleNoteOff);
-    MIDI.begin(MIDI_CHANNEL); // Listen to all incoming messages
-    delay(1000);
+    MIDI.begin(getMIDIChannel()); // Listen to all incoming messages
+}
+
+typedef struct
+{
+    uint32_t eeprom_magic_value; //offset 0
+    uint8_t eeprom_data_version; //offset 4
+    uint8_t midi_channel;        //offset 5
+} eeprom_data_type;
+
+static eeprom_data_type eeprom_data = {0, 0, 0};
+static const eeprom_data_type eeprom_data_dflts = {EEPROM_MAGIC_NUMBER, EEPROM_VERSION_1, MIDI_CHANNEL_DEFAULT};
+
+void setupEEPROM()
+{
+    for (uint8_t i = 0; i < sizeof(eeprom_data_type); i++)
+    {
+        ((uint8_t *)(&eeprom_data))[i] = EEPROM.read(i);
+    }
+    if (eeprom_data.eeprom_magic_value != EEPROM_MAGIC_NUMBER)
+    {
+        memcpy(&eeprom_data, &eeprom_data_dflts, sizeof(eeprom_data_type));
+        updateEEPROM();
+    }
+}
+
+void updateEEPROM()
+{
+    for (uint8_t i = 0; i < sizeof(eeprom_data_type); i++)
+    {
+        EEPROM.update(i, ((uint8_t *)(&eeprom_data))[i]);
+    }
+}
+
+void updateMIDIChannel(uint8_t midi_channel)
+{
+    if (midi_channel < 17 && midi_channel > 0)
+    {
+        eeprom_data.midi_channel = midi_channel;
+    }
+    else
+    {
+        eeprom_data.midi_channel = 1;
+    }
+    updateEEPROM();
+    MIDI.setInputChannel(midi_channel);
+}
+
+uint8_t getMIDIChannel()
+{
+    return eeprom_data.midi_channel;
 }
 
 void loop_normal_mode()
@@ -110,11 +170,145 @@ void loop_normal_mode()
 
     if (time_check_and_update(&last_switch_check, 100))
     {
-        if (digitalRead(SWITCH_1_PIN))
+        updateSwitchState();
+        handleSwitchInNormalMode();
+    }
+}
+
+enum
+{
+    SWITCH_UNKNOWN,
+    SWITCH_DOWN,
+    SWITCH_HELD,
+    SWITCH_UP,
+    SWITCH_HOLD_RELEASE,
+};
+
+typedef struct
+{
+    uint8_t state;
+    unsigned long press_start;
+} switch_state_type;
+
+static switch_state_type switch_state = {SWITCH_UNKNOWN, millis()};
+
+void updateSwitchState()
+{
+    if (digitalRead(SWITCH_1_PIN))
+    {
+        switch (switch_state.state)
         {
-            allNotesOff();
+        case SWITCH_DOWN:
+        case SWITCH_HELD:
+        case SWITCH_HOLD_RELEASE:
+            switch_state.state = SWITCH_HELD;
+            break;
+        case SWITCH_UP:
+        case SWITCH_UNKNOWN:
+        default:
+            switch_state.state = SWITCH_DOWN;
+            switch_state.press_start = millis();
+            break;
         }
     }
+    else
+    {
+        switch (switch_state.state)
+        {
+        case SWITCH_DOWN:
+            switch_state.state = SWITCH_UP;
+            break;
+        case SWITCH_HELD:
+            switch_state.state = SWITCH_HOLD_RELEASE;
+            break;
+        case SWITCH_UP:
+        case SWITCH_HOLD_RELEASE:
+        case SWITCH_UNKNOWN:
+        default:
+            switch_state.state = SWITCH_UNKNOWN;
+            break;
+        }
+    }
+}
+
+void handleSwitchInNormalMode()
+{
+    switch (switch_state.state)
+    {
+    case SWITCH_DOWN:
+        allNotesOff();
+        break;
+    case SWITCH_HELD:
+        if (time_check_and_update(&switch_state.press_start, 5000))
+        {
+            switch_state.state = SWITCH_UNKNOWN;
+            configure_mode_loop();
+        }
+        break;
+    case SWITCH_UP:
+    case SWITCH_UNKNOWN:
+    case SWITCH_HOLD_RELEASE:
+    default:
+        break;
+    }
+}
+
+void configure_mode_loop()
+{
+    static unsigned long configure_mode_last_blink_time = millis();
+    static unsigned long configure_mode_switch_check_time = millis();
+
+    boolean exit_configure = false;
+
+    while (!exit_configure)
+    {
+        if (time_check_and_update(&configure_mode_last_blink_time, 250))
+        {
+            if (getGateState(getMIDIChannel() - 1))
+            {
+                updateGateState(getMIDIChannel() - 1, 0);
+            }
+            else
+            {
+                updateGateState(getMIDIChannel() - 1, 1);
+            }
+            updateGates();
+        }
+        if (time_check_and_update(&configure_mode_switch_check_time, 200))
+        {
+            updateSwitchState();
+            exit_configure = handleSwitchInConfigMode();
+        }
+    }
+
+    updateGateState(getMIDIChannel() - 1, 0);
+    updateGates();
+}
+
+boolean handleSwitchInConfigMode()
+{
+    switch (switch_state.state)
+    {
+    case SWITCH_DOWN:
+        break;
+    case SWITCH_HELD:
+        if (time_check_and_update(&switch_state.press_start, 5000))
+        {
+            return true;
+        }
+        break;
+    case SWITCH_UP:
+        updateGateState(getMIDIChannel() - 1, 0); // clear blinking
+        uint8_t new_midi_channel = getMIDIChannel() + 1;
+        new_midi_channel = new_midi_channel > 16 ? 1 : new_midi_channel;
+        updateMIDIChannel(new_midi_channel);
+        break;
+    case SWITCH_UNKNOWN:
+    case SWITCH_HOLD_RELEASE:
+    default:
+        break;
+    }
+    return false;
 }
 
 void allNotesOff()
