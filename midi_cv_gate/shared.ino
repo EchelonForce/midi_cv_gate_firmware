@@ -158,17 +158,31 @@ uint8_t updateGates()
 {
     uint16_t states = gate_states;
     //Two daisychained 74HC595 shift registers. Bit bang out all the state bits.
-    digitalWrite(GATE_SHIFT_REG_CLK_PIN, LOW);
+
+    uint8_t oldSREG = SREG;
+    cli();
+    PORTC &= 0xFB; //digitalWrite(GATE_SHIFT_REG_CLK_PIN, LOW); //PC2
     for (uint8_t i = 0; i < 16; i++)
     {
-        digitalWrite(GATE_SER_IN_PIN, (states & 0x8000) == 0x8000);
-        digitalWrite(GATE_SHIFT_REG_CLK_PIN, HIGH);
+        //digitalWrite(GATE_SER_IN_PIN, (states & 0x8000) == 0x8000); //PC0
+        if (states & 0x8000)
+        {
+            PORTC |= 0x01;
+        }
+        else
+        {
+            PORTC &= 0xFE;
+        }
+
+        PORTC |= 0x04; //digitalWrite(GATE_SHIFT_REG_CLK_PIN, HIGH);
         states = states << 1;
-        digitalWrite(GATE_SHIFT_REG_CLK_PIN, LOW);
+        PORTC &= 0xFB; //digitalWrite(GATE_SHIFT_REG_CLK_PIN, LOW);
     }
     //Move shift register val to store register
-    digitalWrite(GATE_STORE_REG_CLK_PIN, HIGH);
-    digitalWrite(GATE_STORE_REG_CLK_PIN, LOW);
+    PORTC |= 0x02; //digitalWrite(GATE_STORE_REG_CLK_PIN, HIGH); //PC1
+    PORTC &= 0xFD; //digitalWrite(GATE_STORE_REG_CLK_PIN, LOW);
     //Make sure output is enabled.
-    digitalWrite(GATE_OUT_ENABLE_PIN, LOW);
+
+    PORTC &= 0xF7; //digitalWrite(GATE_OUT_ENABLE_PIN, LOW); //PC3
+    SREG = oldSREG;
 }
