@@ -158,7 +158,7 @@ void loop_normal_mode()
             {
                 updateCV(i, noteValueToCV(note_fifo[i].note_value));
             }
-            else if (note_fifo[i].note_value = 255)
+            else if (note_fifo[i].note_value == 255)
             {
                 updateCV(i, 0);
             }
@@ -389,7 +389,7 @@ void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
     }
     if (oldest_note_idx != -1)
     {
-        note_fifo[oldest_note_idx].note_value = 255;
+        //note_fifo[oldest_note_idx].note_value = 255; Don't change the note value, this would break release in the ADSR.
         note_fifo[oldest_note_idx].on = false;
         note_fifo[oldest_note_idx].time_on = now;
         note_fifo_update = true;
