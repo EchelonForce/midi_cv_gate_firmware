@@ -348,7 +348,7 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
 
     for (i = 0; i < 16; i++)
     {
-        if (note_fifo[i].note_value == inNote)
+        if (note_fifo[i].note_value == inNote && note_fifo[i].on)
         {
             break;
         }
