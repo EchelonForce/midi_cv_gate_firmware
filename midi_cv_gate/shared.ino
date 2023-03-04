@@ -1,7 +1,11 @@
 #include "shared.h"
+#include "dac_cal_vals.h"
 #include <SPI.h>
 
 static uint16_t gate_states = 0;
+
+//See dac_cal_vals.h
+const PROGMEM int8_t dac_calibration[GATE_CV_CNT][MIDI_NOTE_CNT] = DAC_CAL_VALS;
 
 /**
  * Setup IO pins for the 8 MCP4922 DACs.
@@ -131,7 +135,7 @@ void updateDAC(uint8_t chip_select_pin, uint8_t channel, uint16_t value)
 /**
  * Update internal gate_state record. Doesn't update the outputs.
  */
-void updateGateState(uint8_t gate_num, uint8_t state)
+void update_gate_state(uint8_t gate_num, uint8_t state)
 {
     if (state == HIGH)
     {
@@ -154,7 +158,7 @@ uint8_t getGateState(uint8_t gate_num)
 /**
  * Update all gates from the gate_states record and enable the output immidiately.
  */
-uint8_t updateGates()
+uint8_t update_gates()
 {
     uint16_t states = gate_states;
     //Two daisychained 74HC595 shift registers. Bit bang out all the state bits.
@@ -185,4 +189,33 @@ uint8_t updateGates()
 
     PORTC &= 0xF7; //digitalWrite(GATE_OUT_ENABLE_PIN, LOW); //PC3
     SREG = oldSREG;
+}
+
+uint16_t noteValueToCV(uint8_t cv, uint32_t note_val)
+{
+    //C-2 = 0 Volts. note_vals is a 7 bit value
+    // DACs are 12 bit
+    //Max Voltage = 9.21 = fff
+    // C-2 = 0V
+    // C-1 = 1V
+    // C0  = 2V
+    // C1  = 3V
+    // C2  = 4V
+    // C3  = 5V
+    // C4  = 6V
+    // C5  = 7V
+    // C6  = 8V
+    // C7  = 9V
+    // 409=1V 409/12=34.08, 3380 used because it works well empirically.
+    //v1 stuff
+    // static const uint32_t cal_factor = 3380; //DAC uints per semitone * 100.
+    // uint16_t a = min(0xFFF, ((note_val * cal_factor) * 101) / 100);
+
+    //1000=2.477 while plugged into vco.
+    //3000=7.42 (missing digit makes this shakey, tweaking needed.)
+    // 2000 dac units = 4.943v = 404.6 dac/v = 33.72 / semitone = 3372
+    static const uint32_t cal_factor = CAL_FACTOR; //DAC uints per semitone * 100.
+    int8_t cal_offset = pgm_read_byte_near(&dac_calibration[cv][min(note_val, 127)]);
+    uint16_t a = min(0xFFF, (((note_val * cal_factor)) / 100) + (int32_t)cal_offset);
+    return a;
 }

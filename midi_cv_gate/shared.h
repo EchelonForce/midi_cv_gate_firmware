@@ -23,6 +23,9 @@
 #define SWITCH_1_PIN (12)
 #define CV_DAC_SPI_SCK_PIN (13)
 
+#define GATE_CV_CNT (16)
+#define MIDI_NOTE_CNT (128)
+
 void setup_test_cv_gate();
 void setup_test_midi();
 void setup_normal_mode();
@@ -44,10 +47,10 @@ void updateCVOutput();
 
 void updateDAC(uint8_t chip_select_pin, uint8_t channel, uint16_t value);
 
-void updateGateState(uint8_t gate_num, uint8_t state);
+void update_gate_state(uint8_t gate_num, uint8_t state);
 
 uint8_t getGateState(uint8_t gate_num);
 
-uint8_t updateGates();
+uint8_t update_gates();
 
 #endif /* _MIDI_CV_GATE_SHARED_H */
