@@ -8,6 +8,7 @@ typedef enum
     SYSTEM_MODE_FIRST_PRIO_POLY,
     SYSTEM_MODE_32_GATES,
     SYSTEM_MODE_FIRST_PRIO_POLY_QUAD_HARMONIC,
+    SYSTEM_MODE_DRONE,
     SYSTEM_MODE_TEST_MODE,
     SYSTEM_MODE_CNT,
     SYSTEM_MODE_CONFIG, // After SYSTEM_MODE_CNT so it isn't saved.
@@ -48,6 +49,14 @@ void mode_first_prio_poly_quad_harmonic_loop(void);
 void mode_first_prio_poly_quad_harmonic_handle_note_on(byte inChannel, byte inNote, byte inVelocity);
 void mode_first_prio_poly_quad_harmonic_handle_note_off(byte inChannel, byte inNote, byte inVelocity);
 void mode_first_prio_poly_quad_harmonic_all_notes_off(void);
+
+extern mode_callbacks_type mode_drone;
+void mode_drone_setup(void);
+void mode_drone_teardown(void);
+void mode_drone_loop(void);
+void mode_drone_handle_note_on(byte inChannel, byte inNote, byte inVelocity);
+void mode_drone_handle_note_off(byte inChannel, byte inNote, byte inVelocity);
+void mode_drone_all_notes_off(void);
 
 extern mode_callbacks_type mode_test;
 void mode_test_setup(void);

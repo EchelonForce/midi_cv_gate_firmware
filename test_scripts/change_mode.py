@@ -19,7 +19,8 @@ def mode_list():
     s = "0 = FIRST_PRIO_POLY\n"
     s += "1 = 32_GATES\n"
     s += "2 = FIRST_PRIO_POLY_QUAD_HARMONIC\n"
-    s += "3 = TEST_MODE\n"
+    s += "3 = DRONE\n"
+    s += "4 = TEST_MODE\n"
     return s
 
 

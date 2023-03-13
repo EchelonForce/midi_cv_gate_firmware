@@ -91,6 +91,10 @@ void mode_change(mode_type new_mode)
         my_mode_clbks = &mode_first_prio_poly_quad_harmonic_gates;
         break;
 
+    case SYSTEM_MODE_DRONE:
+        my_mode_clbks = &mode_drone;
+        break;
+
     case SYSTEM_MODE_TEST_MODE:
         my_mode_clbks = &mode_test;
         break;
