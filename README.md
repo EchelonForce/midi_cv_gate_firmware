@@ -12,13 +12,13 @@ midi_cv_gate.ino is the main 'sketch' to build.
 # Modes
 Modes can be altered by sending a midi control change message (38) with the data byte equal to the desired mode. The selected mode is persistent (saved to EEPROM).
 
-## Mode 0: SYSTEM_MODE_FIFO_POLY
+## Mode 0: SYSTEM_MODE_FIRST_PRIO_POLY
 The original 16 voice polyphonic mode is preserved as the first mode. First note priority.
 
 ## Mode 1: SYSTEM_MODE_32_GATES
 A mode for using all 32 outputs as if they were gates was added. This mode is meant for something like drum triggers. It responds to note on/off 0-31 and each note maps to gate or cv.
 
-## Mode 2: SYSTEM_MODE_FIFO_POLY_HARMONIC
+## Mode 2: SYSTEM_MODE_FIRST_PRIO_POLY_HARMONIC
 The polyphonic harmonic mode is a work in progress mode that uses 4 CVs to play a note and it's first three harmonics. It currently doesn't account for the calibration correctly in the second harmonic.
 
 ## Mode 3: SYSTEM_MODE_TEST_MODE

@@ -7,7 +7,7 @@
 // Time to hold switch to enter/exit config mode.
 #define PRESS_AND_HOLD_TIME 2000
 
-static mode_callbacks_type *my_mode_clbks = &mode_fifo_polyphonic;
+static mode_callbacks_type *my_mode_clbks = &mode_first_prio_polyphonic;
 static mode_type my_current_mode = SYSTEM_MODE_DEFAULT;
 #define call_mode_clbk_if_valid(_clbk_name) (my_mode_clbks->_clbk_name) ? my_mode_clbks->_clbk_name() : (void)0
 
@@ -87,8 +87,8 @@ void mode_change(mode_type new_mode)
         my_mode_clbks = &mode_32_gates;
         break;
 
-    case SYSTEM_MODE_FIFO_POLY_HARMONIC:
-        my_mode_clbks = &mode_fifo_poly_harmonic_gates;
+    case SYSTEM_MODE_FIRST_PRIO_POLY_QUAD_HARMONIC:
+        my_mode_clbks = &mode_first_prio_poly_quad_harmonic_gates;
         break;
 
     case SYSTEM_MODE_TEST_MODE:
@@ -99,9 +99,9 @@ void mode_change(mode_type new_mode)
         my_mode_clbks = &mode_config;
         break;
 
-    case SYSTEM_MODE_FIFO_POLY:
+    case SYSTEM_MODE_FIRST_PRIO_POLY:
     default:
-        my_mode_clbks = &mode_fifo_polyphonic;
+        my_mode_clbks = &mode_first_prio_polyphonic;
         break;
     }
     my_current_mode = new_mode;

@@ -16,9 +16,9 @@ def list_ports():
 
 
 def mode_list():
-    s = "0 = FIFO_POLY\n"
+    s = "0 = FIRST_PRIO_POLY\n"
     s += "1 = 32_GATES\n"
-    s += "2 = FIFO_POLY_HARMONIC\n"
+    s += "2 = FIRST_PRIO_POLY_QUAD_HARMONIC\n"
     s += "3 = TEST_MODE\n"
     return s
 
