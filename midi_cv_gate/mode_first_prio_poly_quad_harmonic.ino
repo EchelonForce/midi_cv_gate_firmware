@@ -9,8 +9,6 @@ static mode_callbacks_type mode_first_prio_poly_quad_harmonic_gates = {mode_firs
                                                                        mode_first_prio_poly_quad_harmonic_handle_note_off,
                                                                        mode_first_prio_poly_quad_harmonic_all_notes_off};
 
-#define SECOND_HARMONIC_CV 705 // 1.585V / (9.21 V / 0xFFF bits)
-
 typedef struct
 {
     uint8_t note_value;
@@ -54,7 +52,19 @@ void mode_first_prio_poly_quad_harmonic_loop(void)
             {
                 updateCV(base_idx, noteValueToCV(base_idx, fppqh_note_state[i].note_value));
                 updateCV(base_idx + 1, noteValueToCV(base_idx + 1, fppqh_note_state[i].note_value + 12));
-                updateCV(base_idx + 2, noteValueToCV(base_idx + 2, fppqh_note_state[i].note_value) + SECOND_HARMONIC_CV);
+                //Interpolate between the first and third harmonic to get close to the second harmonic.
+                //The first harmonic is 1 V above the base note.
+                //The second harmonic is 1.585 V above the base note.
+                //The third harmonic is 2 V above the base note.
+                //Have to use the noteValueToCV(base_idx + 2...) so that the calibration is accounted for.
+                // uint16_t first_harmonic_cv = noteValueToCV(base_idx + 2, fppqh_note_state[i].note_value + 12);
+                // uint16_t third_harmonic_cv = noteValueToCV(base_idx + 2, fppqh_note_state[i].note_value + 24);
+                // uint32_t second_harmonic_cv = third_harmonic_cv - first_harmonic_cv;
+                // second_harmonic_cv = (second_harmonic_cv * 585) / 1000;
+                // second_harmonic_cv += first_harmonic_cv;
+                // second_harmonic_cv = min(0xFFF, second_harmonic_cv);
+                //updateCV(base_idx + 2, second_harmonic_cv);
+                updateCV(base_idx + 2, noteValueToCV(base_idx + 2, fppqh_note_state[i].note_value + 19));
                 updateCV(base_idx + 3, noteValueToCV(base_idx + 3, fppqh_note_state[i].note_value + 24));
             }
             else if (fppqh_note_state[i].note_value == 255)
