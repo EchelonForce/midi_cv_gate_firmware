@@ -24,7 +24,7 @@ replace "replace_after_cal" below.
 #define CALIBRATION 1
 
 #if (CALIBRATION == 1)
-#define CAL_FACTOR CAL_FACTOR_DEFAULT
+#define CAL_FACTOR CAL_FACTOR_DEFAULT //DAC uints per semitone * 100.
 #define DAC_CAL_VALS DAC_CAL_VALS_ZEROS
 #else
 #define CAL_FACTOR replace_after_cal
@@ -32,6 +32,7 @@ replace "replace_after_cal" below.
 #endif
 
 // clang-format off
+// 2000 dac units = 4.943v = 404.6 dac/v = 33.72 / semitone = 3372
 #define CAL_FACTOR_DEFAULT 3370
 #define DAC_CAL_VALS_ZEROS {\
 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}, \

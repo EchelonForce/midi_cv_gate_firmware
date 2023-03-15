@@ -195,25 +195,12 @@ uint16_t noteValueToCV(uint8_t cv, uint32_t note_val)
 {
     //C-2 = 0 Volts. note_vals is a 7 bit value
     // DACs are 12 bit
-    //Max Voltage = 9.21 = fff
+    //Max Voltage ~ 9.21 = fff
     // C-2 = 0V
-    // C-1 = 1V
-    // C0  = 2V
-    // C1  = 3V
-    // C2  = 4V
-    // C3  = 5V
-    // C4  = 6V
-    // C5  = 7V
-    // C6  = 8V
+    // ...
     // C7  = 9V
     // 409=1V 409/12=34.08, 3380 used because it works well empirically.
-    //v1 stuff
-    // static const uint32_t cal_factor = 3380; //DAC uints per semitone * 100.
-    // uint16_t a = min(0xFFF, ((note_val * cal_factor) * 101) / 100);
 
-    //1000=2.477 while plugged into vco.
-    //3000=7.42 (missing digit makes this shakey, tweaking needed.)
-    // 2000 dac units = 4.943v = 404.6 dac/v = 33.72 / semitone = 3372
     static const uint32_t cal_factor = CAL_FACTOR; //DAC uints per semitone * 100.
     int8_t cal_offset = pgm_read_byte_near(&dac_calibration[cv][min(note_val, 127)]);
     uint16_t a = min(0xFFF, (((note_val * cal_factor)) / 100) + (int32_t)cal_offset);
