@@ -27,9 +27,9 @@ This mode is monophonic multi-voice or drone. Handles one note at a time, first 
 ## Mode 4: SYSTEM_MODE_TEST_MODE
 This mode displays a pattern on the gates and ramps the CV outputs through the full range in steps.
 
-## Mode (5 may change): SYSTEM_MODE_CONFIG
-Enter with long press of switch.
-Config mode is for changing the midi channel. It was previously separate from the other modes because of some special switch handling behaviors. That's been reworked so that the config mode can be entered like other modes accept that when config mode is entered, the saved mode in EEPROM isn't changed. The saved mode is restored when config mode is exited. Handling of the switch has been improved a bit and now only acts when the switch is released (accept for the panic function).
+## Mode (6 may change): SYSTEM_MODE_CONFIG
+Can also be entered with long press of switch.
+Config mode is for changing the midi channel and displaying the mode. The channel is on a blinking LED while the mode is on a solid LED. When config mode is entered, the saved mode in EEPROM isn't changed. The saved mode is restored when config mode is exited. Handling of the switch only acts when the switch is released (accept for the panic function).
 
 # Calibration
 A per note calibration has been added that corrects the CV at each note for each CV output. The calibration requires additional scripting in another repository: midi_cv_gate_test_fixture_firmware
