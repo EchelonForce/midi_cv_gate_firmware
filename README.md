@@ -18,11 +18,14 @@ The original 16 voice polyphonic mode is preserved as the first mode. First note
 ## Mode 1: SYSTEM_MODE_32_GATES
 A mode for using all 32 outputs as if they were gates was added. This mode is meant for something like drum triggers. It responds to note on/off 0-31 and each note maps to gate or cv.
 
-## Mode 2: SYSTEM_MODE_FIRST_PRIO_POLY_HARMONIC
-The polyphonic harmonic mode is a work in progress mode that uses 4 CVs to play a note and it's first three harmonics. It currently doesn't account for the calibration correctly in the second harmonic.
+## Mode 2: SYSTEM_MODE_FIRST_PRIO_POLY_QUAD_HARMONIC
+The polyphonic harmonic mode uses 4 CVs to play a note and it's first three harmonics.
 
-## Mode 3: SYSTEM_MODE_TEST_MODE
-Test functionality was converted to a mode as well. It displays a pattern on the gates and ramps the CV outputs through the full range.
+## Mode 3: SYSTEM_MODE_DRONE
+This mode is monophonic multi-voice or drone. Handles one note at a time, first note priority and plays that note on all CVs and gates. It's useful for tuning too.
+
+## Mode 4: SYSTEM_MODE_TEST_MODE
+This mode displays a pattern on the gates and ramps the CV outputs through the full range in steps.
 
 ## Mode (5 may change): SYSTEM_MODE_CONFIG
 Enter with long press of switch.
